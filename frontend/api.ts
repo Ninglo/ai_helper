@@ -7,14 +7,14 @@ export const getBot = async (id: string): Promise<Bot> => {
   return res.json();
 };
 
-export const putBot = async (prompt: string): Promise<Bot> => {
+export const putBot = async (chat: Chat): Promise<Bot> => {
   const res = await fetch(`${baseURL}/bot`, {
     method: "PUT",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ chat }),
   });
   return res.json();
 };

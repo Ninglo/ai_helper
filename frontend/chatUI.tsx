@@ -28,10 +28,7 @@ export const ChatUI: FC<ChatProps> = ({ chatState, dispatchChatAction }) => {
     const { messages, loading, bot } = chatState;
 
     if (bot) {
-        return <div>
-            {bot.id}
-            {bot.prompt}
-        </div>;
+        return <div>Create {bot.id} success!</div>
     }
 
     return (

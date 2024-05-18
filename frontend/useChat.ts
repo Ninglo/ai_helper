@@ -11,10 +11,7 @@ export type ChatState = {
 
 export function initializer(): ChatState {
   return {
-    messages: [
-      { role: "system", content: "hello" },
-      { role: "user", content: "hi" },
-    ],
+    messages: [],
     input: "",
     loading: false,
   };

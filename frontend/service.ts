@@ -1,11 +1,10 @@
 import {
   appendNextQuestionPromptPrompt,
-  appendSummaryPrompt,
   appendquestionPrompt,
 } from "../common/prompt";
 import { Bot, Chat } from "../common/struct";
 import { EventChannel } from "./EventChannel";
-import { postCompletion, putBot } from "./api";
+import { getBot, postCompletion, putBot } from "./api";
 import { clearLastRound } from "./clearLastRound";
 import { Actions } from "./useChat";
 
@@ -36,6 +35,8 @@ type ChatState = {
   chat: Chat;
   input: string;
   finished: boolean;
+  queryId: string;
+  inited: boolean;
 };
 
 type State = CreateStep1 | CreateStep2 | CreateStep3 | ChatState;
@@ -45,37 +46,37 @@ const DEFAULT_X = 3;
 export class ChatService {
   public channel = new EventChannel<Actions>();
 
-  public state = this.createState();
+  public state: State;
 
   constructor() {
     this.listen();
+    this.state = this.createState();
   }
 
   private createState(): State {
-    const flag = true;
-    return flag
-      ? {
-          type: "create1",
-          doc: "",
-          finished: true,
-        }
-      : {
-          type: "chat",
-          chat: {
-            messages: [
-              { role: "system", content: "hello" },
-              { role: "user", content: "hi" },
-            ],
-          },
-          input: "",
-          finished: true,
-        };
+    const queryId = new URL(location.href).searchParams.get("id");
+    if (!queryId) {
+      return {
+        type: "create1",
+        doc: "",
+        finished: true,
+      };
+    }
+
+    const state: State = {
+      type: "chat",
+      chat: { messages: [] },
+      input: "",
+      finished: true,
+      queryId,
+      inited: false,
+    };
+    this.handleChat(state, { type: "fetchBot" });
+    return state;
   }
 
   private listen() {
     this.channel.event((action) => {
-      console.log(this.state);
-
       switch (this.state.type) {
         case "chat":
           this.handleChat(this.state, action);
@@ -205,10 +206,7 @@ export class ChatService {
         throw new Error(`Illegal action, type: ${action.type}`);
 
       case "submit": {
-        const chat = appendSummaryPrompt(state.chat);
-        const newChat = await postCompletion(chat);
-        const prompt = newChat.messages.at(-1)!.content;
-        const bot = await putBot(prompt);
+        const bot = await putBot(state.chat);
         state.bot = bot;
         this.channel.fire({
           type: "getBot",
@@ -218,7 +216,10 @@ export class ChatService {
     }
   }
 
-  private async handleChat(state: ChatState, action: Actions): Promise<void> {
+  private async handleChat(
+    state: ChatState,
+    action: Actions | { type: "fetchBot" }
+  ): Promise<void> {
     switch (action.type) {
       case "input":
         state.input = action.input;
@@ -252,8 +253,20 @@ export class ChatService {
         return;
       }
 
+      case "fetchBot":
+        const bot = await getBot(state.queryId);
+        state.chat = bot.chat;
+        this.state = state;
+
+        this.channel.fire({
+          type: "APIRespond",
+          chat: state.chat,
+          finish: true,
+        });
+        return;
+
       case "APIRespond":
-        throw new Error(`Illegal action, type: ${action.type}`);
+        return;
     }
   }
 }

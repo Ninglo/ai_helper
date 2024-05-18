@@ -1,6 +1,6 @@
 export type Bot = {
-    id: string;
-    prompt: string;
+  id: string;
+  chat: Chat;
 };
 
 export type Chat = {

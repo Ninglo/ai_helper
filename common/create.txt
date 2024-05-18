@@ -1,0 +1,61 @@
+# Prompts
+- questionPrompt
+- nextQuestionPrompt
+- summaryPrompt
+
+# Vars
+- chat
+- doc
+- x, n
+- modelQuestion
+- userAnswer
+- botPromptAnswer
+
+# Methods
+- makeChat
+- complete
+- postBot
+- show
+
+
+# Structs
+chat 0(n):
+[
+    { role: 'system', content: questionPrompt },
+    { role: 'system', content: doc },
+]
+
+chat n.3:
+chat n with { role: 'assistant', content: modelQuestion }
+
+chat n.7:
+chat n.3 with { role: 'user', content: userAnswer }
+
+chat n+1:
+chat n.7 with { role: 'system', content: nextQuestionPrompt }
+
+chat with summary:
+chat n.7 with { role: 'system', content: summaryPrompt }
+
+
+# Steps
+1st step:
+    void -show-> doc
+    doc, questionPrompt -makeChat-> chat 0
+    chat n = chat 0
+
+2nd step:
+    loop x time(s)
+        chat n -complete-> chat n.3
+        chat n.3 -show-> userAnswer
+        chat n.3, userAnswer -makeChat-> chat n.7
+        if n == x
+            chat * = chat n.7
+            break loop
+        else 
+            chat n.7, nextQuestionPrompt -makeChat-> chat n+1
+
+3rd step:
+    chat *, summaryPrompt -makeChat-> chat with summary
+    chat with summary -complete-> chat with summary & botPromptAnswer
+    botPromptAnswer -postBot-> done

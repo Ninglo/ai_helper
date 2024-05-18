@@ -1,0 +1,32 @@
+{
+  "name": "backend_simple",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "rsbuild dev --open",
+    "build:frontend": "rsbuild build",
+    "build:backend": "rspack build",
+    "preview": "rsbuild preview"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2",
+    "flowp": "^0.4.4",
+    "nedb": "^1.8.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^0.6.15",
+    "@rsbuild/plugin-react": "^0.6.15",
+    "@rspack/cli": "^0.6.5",
+    "@rspack/core": "^0.6.5",
+    "@swc/register": "^0.1.10",
+    "@types/express": "^4.17.21",
+    "@types/nedb": "^1.8.16",
+    "@types/node": "^16.18.97",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.2"
+  }
+}

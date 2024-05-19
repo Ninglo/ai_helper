@@ -1,13 +1,13 @@
 import { mergeDeepRight } from "ramda";
-import {
-  appendNextQuestionPromptPrompt,
-  appendquestionPrompt,
-} from "../common/prompt";
-import { Bot, Chat, Message } from "../common/struct";
-import { EventChannel } from "./EventChannel";
-import { getBot, postCompletion, putBot } from "./api";
-import { clearLastRound } from "./clearLastRound";
 import { Actions } from "./useChat";
+import {
+  appendquestionPrompt,
+  appendNextQuestionPromptPrompt,
+} from "../../common/prompt";
+import { Chat, Bot } from "../../common/struct";
+import { EventChannel } from "../utils/EventChannel";
+import { postCompletion, putBot, getBot } from "../utils/api";
+import { clearLastRound } from "../utils/clearLastRound";
 
 type CreateStep1 = {
   type: "create1";
@@ -72,7 +72,6 @@ export class ChatService {
       queryId,
       inited: false,
     };
-    this.handleChat(state, { type: "fetchBot" });
     return state;
   }
 
@@ -236,10 +235,7 @@ export class ChatService {
     }
   }
 
-  private async handleChat(
-    state: ChatState,
-    action: Actions | { type: "fetchBot" }
-  ): Promise<void> {
+  private async handleChat(state: ChatState, action: Actions): Promise<void> {
     switch (action.type) {
       case "input":
         state.input = action.input;
@@ -283,18 +279,6 @@ export class ChatService {
         this.state = state;
         return;
       }
-
-      case "fetchBot":
-        const bot = await getBot(state.queryId);
-        state.chat = bot.chat;
-        this.state = state;
-
-        this.channel.fire({
-          type: "APIRespond",
-          chat: state.chat,
-          finish: true,
-        });
-        return;
 
       case "APIRespond":
         return;

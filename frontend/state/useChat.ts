@@ -1,6 +1,6 @@
 import { Dispatch, Reducer, useReducer } from "react";
-import { Bot, Chat, Message } from "../common/struct";
-import { EventChannel } from "./EventChannel";
+import { Message, Bot, Chat } from "../../common/struct";
+import { EventChannel } from "../utils/EventChannel";
 
 export type ChatState = {
   messages: Message[];

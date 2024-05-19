@@ -1,5 +1,5 @@
 import { SSE } from "sse.js";
-import { Bot, Chat, Message } from "../common/struct";
+import { Bot, Chat, Message } from "../../common/struct";
 
 const baseURL = "/api";
 

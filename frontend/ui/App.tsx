@@ -1,6 +1,6 @@
 import { ChatUI } from './chatUI';
-import { ChatService } from './service';
-import { initializer, useChat } from './useChat';
+import { useChat, initializer } from '../state/useChat';
+import { ChatService } from '../state/service';
 
 const chatService = new ChatService();
 

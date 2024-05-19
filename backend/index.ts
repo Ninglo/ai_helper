@@ -38,6 +38,7 @@ class BotDB {
 }
 
 const botDB = new BotDB();
+
 class BotService implements IBotService {
   get(bot: Pick<Bot, "id">): Promise<Bot> {
     return botDB.getById(bot.id);
@@ -65,39 +66,6 @@ app.put("/api/bot", jsonParser, async (req, res) => {
 
 app.post("/api/completion", jsonParser, async (req, res) => {
   const chat: Chat = req.body;
-  console.log(chat);
-
-  // res.writeHead(200, {
-  //   "Content-Type": "text/event-stream",
-  //   "Cache-Control": "no-cache",
-  //   Connection: "keep-alive",
-  // });
-  // let counter = 0;
-  // const event = {
-  //   name: "message",
-  //   data: JSON.stringify({
-  //     message: {
-  //       role: "system",
-  //       content: "a",
-  //       type: "answer",
-  //     },
-  //   }),
-  //   id: counter,
-  // };
-  // counter++;
-  // const eventString = `event: ${event.name}\ndata: ${event.data}\n\n`;
-  // res.write(eventString);
-
-  // const event2 = {
-  //   name: "done",
-  //   data: ``,
-  //   id: counter,
-  // };
-  // const eventString2 = `event: ${event2.name}\ndata: ${event2.data}\n\n`;
-  // res.write(eventString2);
-
-  // res.end();
-
   const request = makeRequest(chat);
   request.then(async ({ body }) => {
     const reader = body?.getReader();
@@ -106,18 +74,13 @@ app.post("/api/completion", jsonParser, async (req, res) => {
     }
 
     while (true) {
-      const content = await reader.read();
+      const content: ReadableStreamReadResult<Uint8Array> = await reader.read();
       if (content?.done) {
-        console.log("done1");
         res.end();
         return;
       }
 
       res.write(content.value);
-
-      const str = new TextDecoder().decode(content.value);
-      const match = str.match(/content":"(.*?)"/)?.[1] ?? "";
-      process.stdout.write(match);
     }
   });
 });
@@ -127,5 +90,3 @@ app.use(express.static("dist"));
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
-

@@ -1,0 +1,5 @@
+{
+    "typescript.experimental.tsserver.web.typeAcquisition.enabled": true,
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+    "typescript.tsserver.experimental.useVsCodeWatcher": true
+}

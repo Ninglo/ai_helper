@@ -19,4 +19,7 @@ module.exports = {
     ],
   },
   entry: { index: "./backend/index.ts" },
+  resolve: {
+    extensions: [".js", ".json", ".wasm", ".ts"],
+  },
 } satisfies Configuration;

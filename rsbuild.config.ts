@@ -6,4 +6,9 @@ export default defineConfig({
   source: {
     entry: { index: "./frontend/index.tsx" },
   },
+  output: {
+    sourceMap: {
+      js: "source-map",
+    },
+  },
 });

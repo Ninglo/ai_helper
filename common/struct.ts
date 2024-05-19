@@ -1,5 +1,6 @@
 export type Bot = {
   id: string;
+  link: string;
   chat: Chat;
 };
 

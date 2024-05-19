@@ -15,6 +15,7 @@ const ChatInput: FC<ChatProps> = ({ chatState, dispatchChatAction }) => (
     <div className="chat-input">
         <input
             type="text"
+            onKeyDown={e => e.key === 'Enter' && dispatchChatAction({ type: 'submit' })}
             onChange={e => dispatchChatAction({ type: 'input', input: e.target.value })}
             value={chatState.input}
             placeholder="Type a message..."
@@ -28,13 +29,15 @@ export const ChatUI: FC<ChatProps> = ({ chatState, dispatchChatAction }) => {
     const { messages, loading, bot } = chatState;
 
     if (bot) {
-        return <div>Create {bot.id} success!</div>
+        return <div>Create {bot.id} success!
+            <a href={bot.link}>{bot.link}</a>
+        </div>
     }
 
     return (
         <div className="chat-ui">
             <div className="message-list">
-                {messages.filter(message => message.role !== 'system').map((message, index) => (
+                {messages.filter(filtMessage).map((message, index) => (
                     <Message
                         key={index}
                         role={message.role}
@@ -46,4 +49,13 @@ export const ChatUI: FC<ChatProps> = ({ chatState, dispatchChatAction }) => {
             <ChatInput chatState={chatState} dispatchChatAction={dispatchChatAction} />
         </div>
     );
+};
+
+const inTest = true;
+const filtMessage = (message: Message) => {
+    if (inTest) {
+        return true;
+    } {
+        return message.role !== 'system';
+    }
 };

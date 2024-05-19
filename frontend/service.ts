@@ -1,8 +1,9 @@
+import { mergeDeepRight } from "ramda";
 import {
   appendNextQuestionPromptPrompt,
   appendquestionPrompt,
 } from "../common/prompt";
-import { Bot, Chat } from "../common/struct";
+import { Bot, Chat, Message } from "../common/struct";
 import { EventChannel } from "./EventChannel";
 import { getBot, postCompletion, putBot } from "./api";
 import { clearLastRound } from "./clearLastRound";
@@ -41,7 +42,7 @@ type ChatState = {
 
 type State = CreateStep1 | CreateStep2 | CreateStep3 | ChatState;
 
-const DEFAULT_X = 3;
+const DEFAULT_X = 1;
 
 export class ChatService {
   public channel = new EventChannel<Actions>();
@@ -109,6 +110,7 @@ export class ChatService {
 
       case "submit":
         const newChat = appendquestionPrompt(state.doc);
+        const newMessages = newChat.messages;
         const newState: CreateStep2 = {
           type: "create2",
           n: 0,
@@ -118,16 +120,24 @@ export class ChatService {
           finished: false,
         };
 
-        state.finished = false;
-        const chat = await postCompletion(newChat);
-        newState.n++;
-        newState.finished = true;
-        newState.chat = chat;
-
         this.state = newState;
+        await postCompletion(newChat, (message) => {
+          const chat = {
+            messages: newMessages.concat([message]),
+          };
+          this.state = mergeDeepRight(newState, { chat });
+          this.channel.fire({
+            type: "APIRespond",
+            chat,
+            finish: false,
+          });
+        });
+
+        this.state.n++;
+        this.state.finished = true;
         this.channel.fire({
           type: "APIRespond",
-          chat,
+          chat: this.state.chat,
           finish: true,
         });
         return;
@@ -167,16 +177,26 @@ export class ChatService {
 
         state.finished = false;
         state.chat = appendNextQuestionPromptPrompt(state.chat, state.answer);
-        const chat = await postCompletion(state.chat);
-
-        state.n = state.n + 1;
-        state.finished = true;
-        state.chat = chat;
-
+        const prevChat = state.chat;
+        const prevMessage = prevChat.messages;
         this.state = state;
+        await postCompletion(prevChat, (message) => {
+          const chat = {
+            messages: prevMessage.concat([message]),
+          };
+          this.state = mergeDeepRight(state, { chat });
+          this.channel.fire({
+            type: "APIRespond",
+            chat,
+            finish: false,
+          });
+        });
+
+        this.state.n++;
+        this.state.finished = true;
         this.channel.fire({
           type: "APIRespond",
-          chat,
+          chat: this.state.chat,
           finish: true,
         });
         return;
@@ -232,14 +252,25 @@ export class ChatService {
           role: "user",
           content: state.input,
         });
-        const chat = await postCompletion(state.chat);
-        state.finished = true;
-        state.chat = chat;
-
+        const prevChat = state.chat;
+        const prevMessage = prevChat.messages;
         this.state = state;
+        await postCompletion(prevChat, (message) => {
+          const chat = {
+            messages: prevMessage.concat([message]),
+          };
+          this.state = mergeDeepRight(state, { chat });
+          this.channel.fire({
+            type: "APIRespond",
+            chat,
+            finish: false,
+          });
+        });
+
+        this.state.finished = true;
         this.channel.fire({
           type: "APIRespond",
-          chat,
+          chat: this.state.chat,
           finish: true,
         });
         return;

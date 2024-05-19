@@ -1,3 +1,4 @@
+import { SSE } from "sse.js";
 import { Bot, Chat, Message } from "../common/struct";
 
 const baseURL = "/api";
@@ -23,77 +24,29 @@ export const postCompletion = async (
   chat: Chat,
   cb: (message: Message) => unknown
 ): Promise<void> => {
-  const { body } = await fetch(`${baseURL}/completion`, {
+  const event = new SSE(`${baseURL}/completion`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(chat),
+    payload: JSON.stringify(chat),
+    start: false,
   });
 
-  const reader = body?.getReader();
-  if (!reader) {
-    return;
-  }
-
-  let messageContent = "";
-  let cache = "";
-  while (true) {
-    const content = await reader.read();
-    if (content?.done) {
-      console.log("done1");
-      return;
-    }
-
-    const str = new TextDecoder().decode(content.value);
-    if (str.includes("event:done")) {
-      const [prev] = str.split("event:done");
-      cache += prev;
-
-      const message = handleEvent(cache);
-      if (!message) {
+  return new Promise((resolve) => {
+    let content = "";
+    event.addEventListener("message", (e: { type: string; data: string }) => {
+      const message = JSON.parse(e.data).message satisfies Message;
+      if (message.type !== "answer") {
         return;
       }
 
-      messageContent += message.content;
-      message.content = messageContent;
+      content += message.content;
+      message.content = content;
       cb(message);
-
-      cache = "";
-      console.log("done2");
-      return;
-    } else if (str.startsWith("event:message")) {
-      const message = handleEvent(cache);
-      if (!message) {
-        continue;
-      }
-
-      messageContent += message.content;
-      message.content = messageContent;
-      cb(message);
-
-      cache = str;
-    } else {
-      cache += str;
-    }
-  }
+    });
+    event.addEventListener("done", () => resolve());
+    event.stream();
+  });
 };
-
-function handleEvent(event: string): Message | undefined {
-  if (!event) {
-    return;
-  }
-
-  const text = event
-    .split("\n")
-    .find((str) => str.startsWith("data:"))
-    ?.split("data:")[1];
-  if (!text) {
-    return;
-  }
-
-  const message = JSON.parse(text).message;
-  console.log(message.content);
-  if (message.type === "answer") return message;
-}

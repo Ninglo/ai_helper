@@ -6,7 +6,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import Datastore from "nedb";
 import { createBot } from "./createBot";
-import { makeRequest } from "./makeRequest";
+import { makeRequest } from "./api/makeRequest";
 
 const jsonParser = bodyParser.json();
 
@@ -66,6 +66,38 @@ app.put("/api/bot", jsonParser, async (req, res) => {
 app.post("/api/completion", jsonParser, async (req, res) => {
   const chat: Chat = req.body;
   console.log(chat);
+
+  // res.writeHead(200, {
+  //   "Content-Type": "text/event-stream",
+  //   "Cache-Control": "no-cache",
+  //   Connection: "keep-alive",
+  // });
+  // let counter = 0;
+  // const event = {
+  //   name: "message",
+  //   data: JSON.stringify({
+  //     message: {
+  //       role: "system",
+  //       content: "a",
+  //       type: "answer",
+  //     },
+  //   }),
+  //   id: counter,
+  // };
+  // counter++;
+  // const eventString = `event: ${event.name}\ndata: ${event.data}\n\n`;
+  // res.write(eventString);
+
+  // const event2 = {
+  //   name: "done",
+  //   data: ``,
+  //   id: counter,
+  // };
+  // const eventString2 = `event: ${event2.name}\ndata: ${event2.data}\n\n`;
+  // res.write(eventString2);
+
+  // res.end();
+
   const request = makeRequest(chat);
   request.then(async ({ body }) => {
     const reader = body?.getReader();

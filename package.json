@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
+    "start": "pnpm run build:frontend && pnpm run build:backend && node ./dist/index.js",
     "dev": "rsbuild dev --open",
     "build:frontend": "rsbuild build",
     "build:backend": "rspack build",
